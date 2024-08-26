@@ -1,1 +1,83 @@
+# Continuous Export Pipeline from Security Command Center to Pub/Sub
+
+This project demonstrates i set up a continuous export pipeline from Google Cloud Security Command Center (SCC) to Pub/Sub. This export allows for the automatic forwarding of security findings to external systems like Splunk or QRadar for further analysis and response.
+
+## Table of Contents
+- [Overview](#overview)
+- [Setup Instructions](#setup-instructions)
+- [Creating the Pub/Sub Topic and Subscription](#creating-the-pubsub-topic-and-subscription)
+- [Configuring Continuous Export in Security Command Center](#configuring-continuous-export-in-security-command-center)
+- [Testing the Setup](#testing-the-setup)
+- [Results and Output](#results-and-output)
+- [Conclusion](#conclusion)
+- [References](#references)
+
+## Overview
+In this project, i configured a continuous export of security findings from Google Cloud Security Command Center to a Pub/Sub topic. The export only includes newly created, active, and unmuted findings. This setup can be used to integrate with external security monitoring systems like Splunk.
+
+## Setup Instructions
+
+### Prerequisites
+- Access to a Google Cloud project with Security Command Center and Pub/Sub enabled.
+- Basic understanding of Google Cloud Platform (GCP) services, particularly Security Command Center and Pub/Sub.
+
+### Creating the Pub/Sub Topic and Subscription
+
+1. Open the **Google Cloud Console**.
+2. Navigate to **Pub/Sub > Topics** from the navigation menu.
+3. Click **Create Topic** and enter `export-findings-pubsub-topic` as the Topic ID.
+4. Navigate to **Subscriptions** in the left-hand menu.
+5. Click on the automatically created subscription associated with the topic (e.g., `export-findings-pubsub-topic-sub`).
+6. This subscription will be used to receive security findings from Security Command Center.
+
+### Configuring Continuous Export in Security Command Center
+
+1. Open the navigation menu and select **Security > Security Command Center > Overview > Settings**.
+2. Go to the **Continuous Exports** tab.
+3. Click **Create Pub/Sub Export**.
+4. Enter `export-findings-pubsub` for the export name.
+5. For the description, enter `Continuous exports of Findings to Pub/Sub and BigQuery`.
+6. Select your project's ID.
+7. Choose the `export-findings-pubsub-topic` from the dropdown list.
+8. Set the findings query to:
+    ```sql
+    state="ACTIVE"
+    AND NOT mute="MUTED"
+    ```
+9. Click **Save**.
+
+### Testing the Setup
+
+1. Open a **Cloud Shell** session.
+2. Create a new virtual machine (VM) instance by running the following command:
+    ```bash
+    gcloud compute instances create instance-1 --zone=YOUR-LAB-ZONE --machine-type=e2-micro --scopes=https://www.googleapis.com/auth/cloud-platform
+    ```
+3. The creation of the VM triggers new findings in the SCC:
+   - Public IP address
+   - Default service account used
+   - Compute secure boot disabled
+4. Navigate to **Pub/Sub > Subscriptions** in the Cloud Console.
+5. Select `export-findings-pubsub-topic-sub`.
+6. Click the **Messages** tab.
+7. Enable **ack messages** and click **Pull** to retrieve messages.
+8. You should see messages related to the newly generated security findings.
+
+### Results and Output
+
+After creating the VM, three security findings should be exported to the Pub/Sub topic and visible in the subscription:
+- **Public IP Address**
+- **Default Service Account Used**
+- **Compute Secure Boot Disabled**
+
+These findings can then be forwarded to an external security monitoring system like Splunk for further analysis.
+
+### Conclusion
+
+This task demonstrates how i set up continuous export of security findings from Google Cloud Security Command Center to Pub/Sub. This pipeline ensures that critical security findings are immediately available for external monitoring and response.
+
+### References
+- [Google Cloud Security Command Center Documentation](https://cloud.google.com/security-command-center/docs)
+- [Google Cloud Pub/Sub Documentation](https://cloud.google.com/pubsub/docs)
+
 
